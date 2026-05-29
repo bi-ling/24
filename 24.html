@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🧮 24点巅峰大挑战</title>
+    <style>
+        /* === 1. 现代化全局样式 === */
+        :root {
+            --primary-color: #ff4d4f;
+            --primary-hover: #ff7875;
+            --bg-color: #f7f9fa;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --op-bg: #edf2f7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* === 2. 完美的独立卡片容器 === */
+        .game-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 24px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        @media (min-width: 450px) {
+            .game-container {
+                min-height: 85vh;
+                border-radius: 20px;
+            }
+        }
+
+        /* === 3. 顶部计分板与标题 === */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff4d4f, #f5222d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .score-board {
+            background: #fff0f6;
+            color: #eb2f96;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        /* === 4. 状态提示气泡 === */
+        .tip-bar {
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(24,144,255,0.08);
+        }
+        .tip-bar.warning {
+            background-color: #fffbe6;
+            color: #d46b08;
+            border-color: #ffe58f;
+            box-shadow: 0 2px 8px rgba(212,107,8,0.08);
+        }
+
+        .section-title {
+            text-align: left;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin: 15px 0 8px 0;
+            letter-spacing: 0.5px;
+        }
+
+        /* === 5. 核心：坚固的一行横排不换行 === */
+        .btn-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        /* === 6. 极具质感的按钮 UI === */
+        .btn {
+            flex: 1;
+            height: 60px;
+            border-radius: 14px;
+            font-size: 20px;
+            font-weight: 700;
+            border: 1px solid #e2e8f0;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* 运算符按钮区 */
+        .op-row .btn {
+            background-color: var(--op-bg);
+            border: none;
+            font-size: 24px;
+            color: #4a5568;
+        }
+
+        /* 🔥 招牌火红色高亮状态 */
+        .btn.active {
+            background: linear-gradient(135deg, #ff4d4f, #ff7875) !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 6px 15px rgba(255,77,79,0.3) !important;
+        }
+
+        /* === 7. 历史步骤展示面板 === */
+        .history-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            flex-grow: 1;
+            min-height: 100px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding: 12px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        .empty-tip {
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+        }
+        .history-item {
+            background: var(--card-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border-left: 4px solid var(--primary-color);
+            font-size: 15px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        /* === 8. 底部功能控制区 === */
+        .ctrl-row .btn {
+            height: 46px;
+            font-size: 14px;
+            background-color: #f1f5f9;
+            border: none;
+            color: #475569;
+        }
+        .ctrl-row .btn.next {
+            background: linear-gradient(135deg, #ff4d4f, #f5222d);
+            color: white;
+        }
+        .ctrl-row .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .ans-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: underline;
+            margin-top: 15px;
+            cursor: pointer;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="header">
+        <div class="title">🧮 24点挑战</div>
+        <div class="score-board" id="scoreBoard">闯关数: 0</div>
+    </div>
+    <div class="subtitle">通过四则运算，把4个数字最终凑成24！</div>
+
+    <div class="tip-bar" id="tipBar">💡 请先点击选择【第一个数字】</div>
+
+    <div class="section-title">🔢 当前可用数字</div>
+    <div class="btn-row" id="numRow"></div>
+
+    <div class="section-title">➕ 选择运算符</div>
+    <div class="btn-row op-row" id="opRow">
+        <button class="btn" onclick="clickOp('+')">+</button>
+        <button class="btn" onclick="clickOp('-')">−</button>
+        <button class="btn" onclick="clickOp('×')">×</button>
+        <button class="btn" onclick="clickOp('÷')">÷</button>
+    </div>
+
+    <div class="section-title">📋 计算步骤明细</div>
+    <div class="history-box" id="historyBox"></div>
+
+    <div class="btn-row ctrl-row">
+        <button class="btn" id="undoBtn" onclick="undo()">撤销 ↩️</button>
+        <button class="btn" onclick="resetGame()">重来 🔄</button>
+        <button class="btn next" onclick="nextGame()">下一题 ⏭️</button>
+    </div>
+
+    <button class="ans-btn" onclick="showAnswer()">💡 实在想不出？查看参考答案</button>
+</div>
+
+<script>
+    // === 9. 游戏状态引擎 ===
+    let originalCards = [];
+    let currentPool = [];
+    let firstNumIdx = null;
+    let selectedOp = null;
+    let historySteps = [];
+    let historyStates = [];
+    let gameOver = false;
+    let answerText = "";
+    let successCount = 0;
+
+    // === 10. 完备穷举无错24点算法 ===
+    function solve24(nums) {
+        const opsList = ['+', '-', '*', '/'];
+        const pArr = permute(nums);
+        const calc = (a, b, op) => {
+            if (isNaN(a) || isNaN(b)) return NaN;
+            if (op === '+') return a + b;
+            if (op === '-') return a - b;
+            if (op === '*') return a * b;
+            if (op === '/') return Math.abs(b) < 1e-6 ? NaN : a / b;
+            return NaN;
+        };
+
+        for (let p of pArr) {
+            for (let o1 of opsList) {
+                for (let o2 of opsList) {
+                    for (let o3 of opsList) {
+                        let res = NaN;
+                        res = calc(calc(calc(p[0], p[1], o1), p[2], o2), p[3], o3);
+                        if (!isNaN(res) && Math.abs(res - 24) < 1e-6) return `(( ${p[0]} ${o1} ${p[1]} ) ${o2} ${p[2]} ) ${o3} ${p[3]}`.replace(/\*/g, '×').replace(/\//g, '÷');
+                        res = calc(calc(p[0], calc(p[1], p[2], o2), o1), p[3], o3);
+                        if (!isNaN(res) && Math.abs(res - 24) < 1e-6) return `( ${p[0]} ${o1} ( ${p[1]} ${o2} ${p[2]} ) ) ${o3} ${p[3]}`.replace(/\*/g, '×').replace(/\//g, '÷');
+                        res = calc(calc(p[0], p[1], o1), calc(p[2], p[3], o3), o2);
+                        if (!isNaN(res) && Math.abs(res - 24) < 1e-6) return `( ${p[0]} ${o1} ${p[1]} ) ${o2} ( ${p[2]} ${o3} ${p[3]} )`.replace(/\*/g, '×').replace(/\//g, '÷');
+                        res = calc(p[0], calc(calc(p[1], p[2], o2), p[3], o3), o1);
+                        if (!isNaN(res) && Math.abs(res - 24) < 1e-6) return `${p[0]} ${o1} ( ( ${p[1]} ${o2} ${p[2]} ) ${o3} ${p[3]} )`.replace(/\*/g, '×').replace(/\//g, '÷');
+                        res = calc(p[0], calc(p[1], calc(p[2], p[3], o3), o2), o1);
+                        if (!isNaN(res) && Math.abs(res - 24) < 1e-6) return `${p[0]} ${o1} ( ${p[1]} ${o2} ( ${p[2]} ${o3} ${p[3]} ) )`.replace(/\*/g, '×').replace(/\//g, '÷');
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    function permute(arr) {
+        let res = [];
+        const dfs = (curr, store) => {
+            if (store.length === 0) { res.push(curr); return; }
+            for (let i = 0; i < store.length; i++) {
+                dfs([...curr, store[i]], store.filter((_, idx) => idx !== i));
+            }
+        }
+        dfs([], arr);
+        return res;
+    }
+
+    // === 11. 核心交互流程控制器 ===
+    function initGame() {
+        originalCards = Array.from({length: 4}, () => Math.floor(Math.random() * 10) + 1);
+        currentPool = [...originalCards];
+        firstNumIdx = null;
+        selectedOp = null;
+        historySteps = [];
+        historyStates = [];
+        gameOver = false;
+
+        let sol = solve24(originalCards);
+        answerText = sol ? "💡 参考解法如下：\n\n" + sol : "❌ 哎呀，这组数字可能真的无解，请直接点击下一题跳过！";
+        updateUI();
+    }
+
+    function updateUI() {
+        // 渲染数字面板
+        const numRow = document.getElementById('numRow');
+        numRow.innerHTML = '';
+        currentPool.forEach((num, i) => {
+            const displayNum = num % 1 === 0 ? num : num.toFixed(2);
+            const btn = document.createElement('button');
+            btn.className = `btn ${i === firstNumIdx ? 'active' : ''}`;
+            btn.innerText = displayNum;
+            btn.disabled = gameOver;
+            btn.onclick = () => clickNum(i);
+            numRow.appendChild(btn);
+        });
+
+        // 渲染运算符面板
+        const opButtons = document.querySelectorAll('#opRow .btn');
+        opButtons.forEach(btn => {
+            const btnOp = btn.innerText === '−' ? '-' : btn.innerText; // 统一减号映射
+            btn.className = `btn ${btnOp === selectedOp ? 'active' : ''}`;
+            btn.disabled = gameOver;
+        });
+
+        // 动态状态气泡文案切换
+        const tipBar = document.getElementById('tipBar');
+        if (firstNumIdx !== null && selectedOp === null) {
+            let val = currentPool[firstNumIdx];
+            tipBar.className = "tip-bar warning";
+            tipBar.innerText = `已选：【 ${val % 1 === 0 ? val : val.toFixed(2)} 】，接下来请点击【运算符】`;
+        } else if (firstNumIdx !== null && selectedOp !== null) {
+            let val = currentPool[firstNumIdx];
+            let showOp = selectedOp === '-' ? '−' : selectedOp;
+            tipBar.className = "tip-bar warning";
+            tipBar.innerText = `已锁定：【 ${val % 1 === 0 ? val : val.toFixed(2)} ${showOp} ？ 】，请选择另一个数字`;
+        } else {
+            tipBar.className = "tip-bar";
+            tipBar.innerText = "💡 请先点击选择【第一个数字】";
+        }
+
+        // 渲染步骤历史
+        const historyBox = document.getElementById('historyBox');
+        if (historySteps.length > 0) {
+            historyBox.innerHTML = historySteps.map(step => `<div class="history-item">${step}</div>`).join('');
+        } else {
+            historyBox.innerHTML = `<div class="empty-tip">暂无计算步骤</div>`;
+        }
+
+        document.getElementById('undoBtn').disabled = historyStates.length === 0;
+        document.getElementById('scoreBoard').innerText = `闯关数: ${successCount}`;
+    }
+
+    function clickNum(idx) {
+        if (gameOver) return;
+        if (firstNumIdx === null) { firstNumIdx = idx; }
+        else if (firstNumIdx === idx && selectedOp === null) { firstNumIdx = null; }
+        else if (firstNumIdx !== null && selectedOp === null) { firstNumIdx = idx; }
+        else if (firstNumIdx !== null && selectedOp !== null) { handleCalculation(idx); }
+        updateUI();
+    }
+
+    function clickOp(op) {
+        if (gameOver) return;
+        const targetOp = op === '−' ? '-' : op;
+        if (firstNumIdx === null) { alert("请先选择一个数字，再选择符号！"); return; }
+        selectedOp = targetOp;
+        updateUI();
+    }
+
+    function handleCalculation(secondIdx) {
+        if (firstNumIdx === secondIdx) return;
+        // 压入状态栈，用于无损撤销
+        historyStates.push({ currentPool: [...currentPool], historySteps: [...historySteps], firstNumIdx: firstNumIdx, selectedOp: selectedOp });
+
+        let realNum1 = currentPool[firstNumIdx];
+        let realNum2 = currentPool[secondIdx];
+        let maxIdx = Math.max(firstNumIdx, secondIdx);
+        let minIdx = Math.min(firstNumIdx, secondIdx);
+        currentPool.splice(maxIdx, 1);
+        currentPool.splice(minIdx, 1);
+
+        let res = 0;
+        if (selectedOp === '+') res = realNum1 + realNum2;
+        if (selectedOp === '-') res = realNum1 - realNum2;
+        if (selectedOp === '×') res = realNum1 * realNum2;
+        if (selectedOp === '÷') {
+            if (Math.abs(realNum2) < 1e-6) {
+                alert("数学错误：除数不能为0！");
+                historyStates.pop();
+                firstNumIdx = null; selectedOp = null;
+                return;
+            }
+            res = realNum1 / realNum2;
+        }
+
+        let n1 = realNum1 % 1 === 0 ? realNum1 : realNum1.toFixed(2);
+        let n2 = realNum2 % 1 === 0 ? realNum2 : realNum2.toFixed(2);
+        let r = res % 1 === 0 ? res : res.toFixed(2);
+        let showOp = selectedOp === '-' ? '−' : selectedOp;
+
+        historySteps.push(`${n1} ${showOp} ${n2} = ${r}`);
+        currentPool.push(res);
+        firstNumIdx = null; selectedOp = null;
+
+        if (currentPool.length === 1) {
+            gameOver = true;
+            setTimeout(() => {
+                if (Math.abs(currentPool[0] - 24) < 1e-6) {
+                    alert("🎉 太强了！完美拼出 24 点！");
+                    successCount++;
+                } else {
+                    alert(`😢 挑战失败，最终落在了 ${currentPool[0].toFixed(2)}，没能凑成 24。`);
+                }
+                updateUI();
+            }, 150);
+        }
+    }
+
+    function undo() {
+        if (historyStates.length === 0) return;
+        let state = historyStates.pop();
+        currentPool = state.currentPool; historySteps = state.historySteps;
+        firstNumIdx = state.firstNumIdx; selectedOp = state.selectedOp;
+        gameOver = false; updateUI();
+    }
+
+    function resetGame() {
+        currentPool = [...originalCards];
+        firstNumIdx = null; selectedOp = null; historySteps = []; historyStates = [];
+        gameOver = false; updateUI();
+    }
+
+    function nextGame() { initGame(); }
+    function showAnswer() { alert(answerText); }
+
+    // 初始化启动项目
+    initGame();
+</script>
+</body>
+</html>
